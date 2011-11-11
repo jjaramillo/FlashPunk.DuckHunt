@@ -1,6 +1,7 @@
 package co.FlashPunk.DuckHunt.Stages
 {
 	import co.FlashPunk.DuckHunt.Entities.Dog;
+	import co.FlashPunk.DuckHunt.Entities.Duck;
 	
 	import net.flashpunk.World;
 	
@@ -8,7 +9,7 @@ package co.FlashPunk.DuckHunt.Stages
 	{
 		public function MainStage()
 		{
-			add(new Dog());
+			add(new Duck());
 		}
 	}
 }
