@@ -4,6 +4,7 @@ package co.FlashPunk.DuckHunt.Entities
 	
 	import flash.display.Sprite;
 	import flash.geom.Matrix3D;
+	import flash.sampler.startSampling;
 	
 	import net.flashpunk.Entity;
 	import net.flashpunk.FP;
@@ -54,14 +55,16 @@ package co.FlashPunk.DuckHunt.Entities
 			this._Angle = MathUtil.randomNumber(10, 170);		
 			
 			this.x = (FP.screen.width / 2) - (SPRITEWIDTH * this.Scale) / 2;
-			this.y = FP.screen.height - (SPRITEHEIGHT * this.Scale*2);
+			this.y = FP.screen.height - (SPRITEHEIGHT * this.Scale*2) - 138;
 			
 			_Starting_x = this.x;
 			_Starting_y = this.y;
-			
+			this.layer = 1;
 			recalculateSpeed_y();
+			
 			var randomStart:Number = MathUtil.randomNumber(-1, 1);
 			this._Direction_x = randomStart > 0 ? 1 : -1;
+			
 			DuckSprite.flipped = randomStart > 0 ? false: true;
 			
 			setHitbox(SPRITEWIDTH * this.Scale, 
@@ -118,12 +121,12 @@ package co.FlashPunk.DuckHunt.Entities
 				this._Direction_y = this._Direction_y * (-1);
 				this.y = 0;
 			}
-			if(this.y + (SPRITEHEIGHT * this.Scale)  >= FP.screen.height)
+			if(this.y  > _Starting_y)
 			{
 				this._Angle = MathUtil.randomNumber(10, 80);
 				recalculateSpeed_y();
 				this._Direction_y = this._Direction_y * (-1);
-				this. y = FP.screen.height - (SPRITEHEIGHT * this.Scale)
+				this. y = _Starting_y;
 			}			
 		}
 		

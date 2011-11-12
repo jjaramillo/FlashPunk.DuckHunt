@@ -9,7 +9,7 @@ package co.FlashPunk.DuckHunt
 	{
 		public function Game()
 		{
-			super(800, 600, 60, false);
+			super(768, 672, 60, false);
 			FP.world = new MainStage();
 		}
 	}
