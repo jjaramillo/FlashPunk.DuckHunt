@@ -21,8 +21,8 @@ package co.FlashPunk.DuckHunt.Entities
 		
 		
 		private var Scale:Number = 2;
-		private var Speed:Number = 1;
-		private var Speed_y:Number = 1;
+		private var Speed:Number = 2;
+		private var Speed_y:Number = 2;
 		private var _TimePassed:Number = 0;
 		private var _Angle:Number = 0;
 		private var _Starting_x:Number = 0;
@@ -51,7 +51,7 @@ package co.FlashPunk.DuckHunt.Entities
 			_Starting_y = this.y;
 			
 			recalculateSpeed_y();
-			var randomStart:Number = 1;//MathUtil.randomNumber(-1, 1) >0? 1: -1;
+			var randomStart:Number = MathUtil.randomNumber(-1, 1);
 			this._Direction_x = randomStart > 0 ? 1 : -1;
 			DuckSprite.flipped = randomStart > 0 ? false: true;
 		}
@@ -60,9 +60,10 @@ package co.FlashPunk.DuckHunt.Entities
 		{
 			
 			this.x += this.Speed * _Direction_x;
-			this.y += this.Speed_y;
+			this.y += this.Speed_y * _Direction_y;
 			
 			checkStageLimits();	
+			trace(this.y);
 		}
 		
 		private function checkStageLimits():void
@@ -73,6 +74,7 @@ package co.FlashPunk.DuckHunt.Entities
 				recalculateSpeed_y();
 				DuckSprite.flipped = true;
 				this._Direction_x = this._Direction_x * (-1);
+				this.x = FP.screen.width - (SPRITEWIDTH * this.Scale);
 				
 			}
 			if(this.x <= 0)
@@ -81,18 +83,21 @@ package co.FlashPunk.DuckHunt.Entities
 				recalculateSpeed_y();
 				DuckSprite.flipped = false;
 				this._Direction_x = this._Direction_x * (-1);
+				this.x = 0;
 			}
 			if(this.y <=0 )
 			{
 				this._Angle = MathUtil.randomNumber(10, 80);
 				recalculateSpeed_y();
-				this._Direction_y = this._Direction_y * (-1);	
+				this._Direction_y = this._Direction_y * (-1);
+				this.y = 0;
 			}
 			if(this.y + (SPRITEHEIGHT * this.Scale)  >= FP.screen.height)
 			{
 				this._Angle = MathUtil.randomNumber(10, 80);
 				recalculateSpeed_y();
 				this._Direction_y = this._Direction_y * (-1);
+				this. y = FP.screen.height - (SPRITEHEIGHT * this.Scale)
 			}			
 		}
 		
@@ -100,7 +105,7 @@ package co.FlashPunk.DuckHunt.Entities
 		{
 			var firstPoint:Number =  _Starting_y - ( this.x + (this.Speed * this._Direction_x) - _Starting_x) * Math.sin((this._Angle*(Math.PI/180)));
 			var secondPoint:Number =  _Starting_y - ( this.x + 2*(this.Speed * this._Direction_x) - _Starting_x) * Math.sin((this._Angle*(Math.PI/180)));
-			this.Speed_y = secondPoint - firstPoint;
+			this.Speed_y =secondPoint - firstPoint;
 		}
 	}
 }
