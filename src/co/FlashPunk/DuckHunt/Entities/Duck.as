@@ -11,14 +11,20 @@ package co.FlashPunk.DuckHunt.Entities
 	import net.flashpunk.Mask;
 	import net.flashpunk.Screen;
 	import net.flashpunk.graphics.Spritemap;
+	import net.flashpunk.utils.Input;
 	
 	public class Duck extends Entity
 	{
 		[Embed(source = 'assets/sprites/duck.png')]
 		private const DUCK:Class;
-		private static var SPRITEWIDTH:Number = 34;
-		private static var SPRITEHEIGHT:Number = 33;
+		private const MAX_WAIT_TIME_AFTER_BEING_SHOOT:Number = 1;
+		private const FALLING_SPEED:Number = 3.5;
+		private const ALIVE:String = 'Alive';
+		private const DEAD:String = 'Dead';
+		private const JUST_SHOOT:String = 'Just Shoot';
 		
+		private static var SPRITEWIDTH:Number = 34;
+		private static var SPRITEHEIGHT:Number = 33;		
 		
 		private var Scale:Number = 2;
 		private var Speed:Number = 2;
@@ -28,16 +34,19 @@ package co.FlashPunk.DuckHunt.Entities
 		private var _Starting_x:Number = 0;
 		private var _Starting_y:Number = 0;
 		private var _Direction_x:Number = 1;
-		private var _Direction_y:Number = 1;
+		private var _Direction_y:Number = 1;		
+		private var _SecondsAfterBeingShoot:Number = 0;
+		
+		private var _Status:String = 'Alive';
 		
 		public var DuckSprite:Spritemap = new Spritemap(DUCK, SPRITEWIDTH, SPRITEHEIGHT);
 		
 		public function Duck()
-		{
+		{		
 			DuckSprite.scale = this.Scale;
 			DuckSprite.add( 'fly_up', [0, 1, 2, 1], 8, true );
 			DuckSprite.add( 'fly_side', [7, 6, 8, 6], 8, true );			
-			DuckSprite.add( 'fall', [4, 5], 2, true );
+			DuckSprite.add( 'fall', [4, 5], 4, true );
 			DuckSprite.add( 'got_hit', [3], 1, false );
 			graphic = DuckSprite;
 			DuckSprite.play( 'fly_up' );
@@ -54,16 +63,33 @@ package co.FlashPunk.DuckHunt.Entities
 			var randomStart:Number = MathUtil.randomNumber(-1, 1);
 			this._Direction_x = randomStart > 0 ? 1 : -1;
 			DuckSprite.flipped = randomStart > 0 ? false: true;
+			
+			setHitbox(SPRITEWIDTH * this.Scale, 
+				SPRITEHEIGHT * this.Scale);
 		}
 		
 		override public function update():void
 		{
-			
-			this.x += this.Speed * _Direction_x;
-			this.y += this.Speed_y * _Direction_y;
-			
-			checkStageLimits();	
-			trace(this.y);
+			switch(_Status){
+				case ALIVE:
+					this.x += this.Speed * _Direction_x;
+					this.y += this.Speed_y * _Direction_y;
+					checkHit();
+					checkStageLimits();
+				break;
+				case DEAD:					
+					this.y += FALLING_SPEED;
+				break;
+				case JUST_SHOOT:
+					_SecondsAfterBeingShoot+=FP.elapsed;
+					if(_SecondsAfterBeingShoot > MAX_WAIT_TIME_AFTER_BEING_SHOOT)
+					{
+						_Status = DEAD;
+						this.Speed_y = 2;
+						DuckSprite.play('fall');
+					}
+				break;
+			}		
 		}
 		
 		private function checkStageLimits():void
@@ -106,6 +132,16 @@ package co.FlashPunk.DuckHunt.Entities
 			var firstPoint:Number =  _Starting_y - ( this.x + (this.Speed * this._Direction_x) - _Starting_x) * Math.sin((this._Angle*(Math.PI/180)));
 			var secondPoint:Number =  _Starting_y - ( this.x + 2*(this.Speed * this._Direction_x) - _Starting_x) * Math.sin((this._Angle*(Math.PI/180)));
 			this.Speed_y =secondPoint - firstPoint;
+		}
+		
+		private function checkHit():void
+		{			
+			var crossHair:Crosshair = collide('Crosshair', x, y) as Crosshair;
+			if(crossHair && Input.mousePressed)
+			{
+				_Status = JUST_SHOOT;
+				DuckSprite.play('got_hit');
+			}
 		}
 	}
 }
