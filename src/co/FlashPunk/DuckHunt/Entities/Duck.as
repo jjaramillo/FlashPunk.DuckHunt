@@ -1,5 +1,6 @@
 package co.FlashPunk.DuckHunt.Entities
 {
+	import co.FlashPunk.DuckHunt.Stages.MainStage;
 	import co.FlashPunk.DuckHunt.Util.MathUtil;
 	
 	import flash.display.Sprite;
@@ -11,6 +12,7 @@ package co.FlashPunk.DuckHunt.Entities
 	import net.flashpunk.Graphic;
 	import net.flashpunk.Mask;
 	import net.flashpunk.Screen;
+	import net.flashpunk.Sfx;
 	import net.flashpunk.graphics.Spritemap;
 	import net.flashpunk.utils.Input;
 	
@@ -18,6 +20,8 @@ package co.FlashPunk.DuckHunt.Entities
 	{
 		[Embed(source = 'assets/sprites/duck.png')]
 		private const DUCK:Class;
+		//[Embed(source = 'assets/sounds/Duck_Hitting_the_Ground.mp3')]
+		//private const HIT_GROUND:Class;
 		private const MAX_WAIT_TIME_AFTER_BEING_SHOOT:Number = 1;
 		private const FALLING_SPEED:Number = 3.5;
 		private const ALIVE:String = 'Alive';
@@ -40,10 +44,12 @@ package co.FlashPunk.DuckHunt.Entities
 		
 		private var _Status:String = 'Alive';
 		
-		public var DuckSprite:Spritemap = new Spritemap(DUCK, SPRITEWIDTH, SPRITEHEIGHT);
+		private var DuckSprite:Spritemap = new Spritemap(DUCK, SPRITEWIDTH, SPRITEHEIGHT);
+		//private var HitGroundSound:Sfx = new Sfx(HIT_GROUND);
 		
 		public function Duck()
 		{		
+			
 			DuckSprite.scale = this.Scale;
 			DuckSprite.add( 'fly_up', [0, 1, 2, 1], 8, true );
 			DuckSprite.add( 'fly_side', [7, 6, 8, 6], 8, true );			
@@ -82,6 +88,10 @@ package co.FlashPunk.DuckHunt.Entities
 				break;
 				case DEAD:					
 					this.y += FALLING_SPEED;
+					if(this.y > _Starting_y + (SPRITEHEIGHT * this.Scale))
+					{
+						removeMeFromGame();
+					}
 				break;
 				case JUST_SHOOT:
 					_SecondsAfterBeingShoot+=FP.elapsed;
@@ -145,6 +155,14 @@ package co.FlashPunk.DuckHunt.Entities
 				_Status = JUST_SHOOT;
 				DuckSprite.play('got_hit');
 			}
+		}
+	
+		private function removeMeFromGame():void
+		{
+			//HitGroundSound.play();
+			var currentStage:MainStage = FP.world as MainStage;
+			currentStage.remove(this);
+			currentStage.showDogWithDuck(this.x, this.y);
 		}
 	}
 }
