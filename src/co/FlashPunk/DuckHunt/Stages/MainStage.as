@@ -5,6 +5,8 @@ package co.FlashPunk.DuckHunt.Stages
 	import co.FlashPunk.DuckHunt.Entities.Duck;
 	import co.FlashPunk.DuckHunt.Util.Splash;
 	
+	import flash.utils.setTimeout;
+	
 	import flashx.textLayout.elements.OverflowPolicy;
 	
 	import net.flashpunk.Graphic;
@@ -14,9 +16,7 @@ package co.FlashPunk.DuckHunt.Stages
 	import net.flashpunk.utils.Input;
 	
 	public class MainStage extends World
-	{
-		//[Embed(source = 'assets/sounds/Round_Introduction.mp3')]
-		//private const ROUND_START_SOUND:Class;
+	{		
 		[Embed(source = 'assets/sprites/background.png')]	
 		private const BACKGROUND:Class;
 		[Embed(source = 'assets/sprites/sky.png')]
@@ -26,7 +26,7 @@ package co.FlashPunk.DuckHunt.Stages
 		private var sky:Image = null;
 		private var splash:Splash = new Splash();
 		
-		//private var RoundIntroduction:Sfx = new Sfx(ROUND_START_SOUND);
+		//
 		
 		private var Scale:Number = 3;
 		
@@ -47,6 +47,7 @@ package co.FlashPunk.DuckHunt.Stages
 			addGraphic(sky, 2);
 			addGraphic(background, 0);
 			add(new Dog( 'walk' ))
+			
 		}
 		
 		public function startGame():void		
@@ -62,11 +63,16 @@ package co.FlashPunk.DuckHunt.Stages
 		
 		public function showDogWithDuck(x:Number, y:Number):void
 		{
-			var dog:Dog = new Dog( 'got_one' );
-			dog.layer = 1;
-			dog.x = x;
-			dog.y = y - Dog.SPRITEHEIGHT;
-			add(dog);
+			setTimeout(
+				function():void{
+					var dog:Dog = new Dog( 'got_one' );
+					dog.layer = 1;
+					dog.x = x - Duck.SPRITEWIDTH;
+					dog.y = y - Dog.SPRITEHEIGHT;
+					add(dog);
+					dog.GotIt.play();
+				}, 1000);
+			
 		}
 		
 		

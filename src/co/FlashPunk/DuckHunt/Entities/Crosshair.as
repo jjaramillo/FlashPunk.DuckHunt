@@ -4,6 +4,7 @@ package co.FlashPunk.DuckHunt.Entities
 	import net.flashpunk.FP;
 	import net.flashpunk.Graphic;
 	import net.flashpunk.Mask;
+	import net.flashpunk.Sfx;
 	import net.flashpunk.graphics.Spritemap;
 	import net.flashpunk.utils.Input;
 	
@@ -11,12 +12,18 @@ package co.FlashPunk.DuckHunt.Entities
 	{
 		[Embed(source = 'assets/sprites/crosshair.png')]
 		private const CROSSHAIR:Class;
+		
+		[Embed(source = 'assets/sounds/fire.mp3')]
+		private const FIRE:Class;
+		
+		
 		private static var SPRITEWIDTH:Number = 29;
 		private static var SPRITEHEIGHT:Number = 29;
 		
 		private var Scale:Number = 1;
 		
-		public var CrosshairSprite:Spritemap = new Spritemap(CROSSHAIR, SPRITEWIDTH, SPRITEHEIGHT);
+		private var CrosshairSprite:Spritemap = new Spritemap(CROSSHAIR, SPRITEWIDTH, SPRITEHEIGHT);
+		private var FireSound:Sfx = new Sfx(FIRE);
 		
 		public function Crosshair()
 		{
@@ -36,7 +43,12 @@ package co.FlashPunk.DuckHunt.Entities
 		
 		override public function update():void
 		{
-			try{	
+			
+			try{
+				if(Input.mousePressed)
+				{
+					FireSound.play();
+				}
 				this.x = Input.mouseX;
 				this.y = Input.mouseY;
 			}

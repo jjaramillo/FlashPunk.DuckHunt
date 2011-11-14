@@ -10,13 +10,22 @@ package co.FlashPunk.DuckHunt.Entities
 	import net.flashpunk.FP;
 	import net.flashpunk.Graphic;
 	import net.flashpunk.Mask;
+	import net.flashpunk.Sfx;
 	import net.flashpunk.graphics.Spritemap;
+	
+	import org.osmf.events.PlayingChangeEvent;
 	
 	public class Dog extends Entity
 	{
+		[Embed(source = 'assets/sounds/round_intro.mp3')]		
+		private const ROUND_START_SOUND:Class;
 		[Embed(source = 'assets/sprites/dog.png')]
-		private const DOG:Class;	
-		private const MAX_SNIFF_COUNT:Number = 3;
+		private const DOG:Class;
+		[Embed(source = 'assets/sounds/bark.mp3')]
+		private const BARK:Class;
+		[Embed(source = 'assets/sounds/dog_with_duck.mp3')]
+		private const GOT_IT:Class;
+		
 		
 		public static var SPRITEWIDTH:Number = 60;
 		public static var SPRITEHEIGHT:Number = 61;
@@ -29,10 +38,22 @@ package co.FlashPunk.DuckHunt.Entities
 		private var _SniffCount:Number = 0;
 		private var timeout:uint = 0;
 		
+		private var RoundIntroduction:Sfx = new Sfx(ROUND_START_SOUND);
+		private var BarkSound:Sfx = new Sfx(BARK);
+		public var GotIt:Sfx = new Sfx(GOT_IT);
+		
+		
 		public var DogSprite:Spritemap = new Spritemap(DOG, 56, 48);
 		
 		public function Dog(animation:String)
 		{
+			RoundIntroduction.complete = function():void
+			{
+				_TimePassed = 0;
+				DogSprite.play( 'yay_got_them');
+				BarkSound.play();
+			}
+			
 			this.layer = -1;
 			DogSprite.scale = this.Scale;
 			DogSprite.add( 'sniff', [0, 1], 4, true);
@@ -50,7 +71,10 @@ package co.FlashPunk.DuckHunt.Entities
 		{			
 			_TimePassed += FP.elapsed;
 			switch( DogSprite.currentAnim){
-				case 'walk':					
+				case 'walk':
+					if(!RoundIntroduction.playing){
+						RoundIntroduction.play();
+					}
 					this.x += this.Speed;					
 					if( _TimePassed >= 1.5 )
 					{						
@@ -61,17 +85,8 @@ package co.FlashPunk.DuckHunt.Entities
 				case 'sniff':
 					if( _TimePassed >= 0.8 )					
 					{	
-						_TimePassed = 0;						
-						_SniffCount++;						
-						
-						if(_SniffCount == MAX_SNIFF_COUNT){
-							DogSprite.play( 'yay_got_them' );
-						}
-						else
-						{
-							DogSprite.play( 'walk' );
-						}
-						
+						_TimePassed = 0;					
+						DogSprite.play( 'walk' );					
 					}
 						break;
 				case 'yay_got_them':
@@ -120,6 +135,7 @@ package co.FlashPunk.DuckHunt.Entities
 			if(beggining){ currentStage.startGame();}
 			else{ currentStage.addDuck();	}
 		}
+
 		
 	}
 }
