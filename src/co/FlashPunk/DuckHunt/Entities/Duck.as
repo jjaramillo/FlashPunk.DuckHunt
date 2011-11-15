@@ -30,8 +30,7 @@ package co.FlashPunk.DuckHunt.Entities
 		[Embed(source = 'assets/sounds/duck_falling.mp3')]
 		private const DUCK_FALLING:Class;
 		[Embed(source = 'assets/sounds/duck.mp3')]
-		private const DUCK_SOUND:Class;
-		
+		private const DUCK_SOUND:Class;		
 		
 		
 		private const MAX_WAIT_TIME_AFTER_BEING_SHOOT:Number = 1;
@@ -40,8 +39,8 @@ package co.FlashPunk.DuckHunt.Entities
 		private const DEAD:String = 'Dead';
 		private const JUST_SHOOT:String = 'Just Shoot';
 		private const GOT_AWAY:String = 'Got Away';
-		private const MAX_TIME_FLYING:Number = 5;
-		private const GOT_AWAY_SPEED:Number = -3;
+		private const MAX_TIME_FLYING:Number = 8;
+		private const GOT_AWAY_SPEED:Number = -5;
 		
 		public static var SPRITEWIDTH:Number = 34;
 		public static var SPRITEHEIGHT:Number = 33;		
@@ -68,14 +67,34 @@ package co.FlashPunk.DuckHunt.Entities
 		private var DuckSound:Sfx = new Sfx(DUCK_SOUND);		
 		
 		private var DuckSoundInterval:uint = 0;
+		private var DuckDirectionInterval:uint = 0;
 		
 		public function Duck()
-		{		
+		{			 
 			DuckSoundInterval = setInterval(
 				function():void
 				{
 					DuckSound.play();
 				},1000);
+			
+			DuckDirectionInterval = setInterval(
+				function():void
+				{
+					var random_x_direction:Number = MathUtil.randomNumber(-1, 1);
+					var random_y_direction:Number = MathUtil.randomNumber(-1, 1);
+					_Direction_x = random_x_direction > 0 ? 1 : -1;					
+					_Direction_y = random_y_direction > 0 ? 1 : -1;
+					this._Angle = MathUtil.randomNumber(0, 180);
+					recalculateSpeed_y();
+					if(_Direction_x > 0){ DuckSprite.flipped = false; }
+					else { DuckSprite.flipped = true; }
+					if(
+						(this._Angle > 0 && this._Angle < 30)
+						|| (this._Angle > 150 && this._Angle < 180)
+					) { DuckSprite.play( 'fly_side' ); }
+					else { DuckSprite.play( 'fly_up' ); }
+				},1000);
+				
 			
 			Speed = MathUtil.randomNumber(2, 8);
 			DuckSprite.scale = this.Scale;
@@ -89,11 +108,13 @@ package co.FlashPunk.DuckHunt.Entities
 			
 			this._Angle = MathUtil.randomNumber(10, 170);		
 			
-			this.x = (FP.screen.width / 2) - (SPRITEWIDTH * this.Scale) / 2;
+			this.x = MathUtil.randomNumber(SPRITEWIDTH * this.Scale, FP.screen.width - (SPRITEWIDTH * this.Scale));
+				(FP.screen.width / 2) - (SPRITEWIDTH * this.Scale) / 2;
 			this.y = FP.screen.height - (SPRITEHEIGHT * this.Scale*2) - 138;
 			
 			_Starting_x = this.x;
 			_Starting_y = this.y;
+			
 			this.layer = 1;
 			recalculateSpeed_y();
 			
@@ -102,9 +123,15 @@ package co.FlashPunk.DuckHunt.Entities
 			
 			DuckSprite.flipped = randomStart > 0 ? false: true;
 			
-			setHitbox(SPRITEWIDTH * this.Scale, 
-				SPRITEHEIGHT * this.Scale);
-			WingFlapSound.loop();
+			var hitBoxWidth:Number = SPRITEWIDTH * (this.Scale / 2);
+			var hitBoxHeight:Number = SPRITEHEIGHT * (this.Scale / 2);
+			var hitBoxCenter_x:Number = SPRITEWIDTH * (this.Scale / 2) - (hitBoxWidth /2 );
+			var hitBoxCenter_y:Number = SPRITEHEIGHT * (this.Scale / 2) - (hitBoxHeight / 2)
+			
+			//setHitbox(hitBoxWidth, hitBoxHeight, hitBoxCenter_x, hitBoxCenter_y);
+			setHitbox(SPRITEWIDTH, SPRITEHEIGHT);
+			trace('CH:'+ hitBoxCenter_x + ' CV: ' + hitBoxCenter_y)
+			WingFlapSound.loop();;
 		}
 		
 		override public function update():void
@@ -194,10 +221,13 @@ package co.FlashPunk.DuckHunt.Entities
 		private function checkHit():void
 		{			
 			var crossHair:Crosshair = collide('Crosshair', x, y) as Crosshair;
-			if(crossHair && Input.mousePressed && _Status == ALIVE)
+			if(crossHair && _Status == ALIVE) 
 			{
-				_Status = JUST_SHOOT;
-				DuckSprite.play('got_hit');
+				if(Input.mousePressed){
+					_Status = JUST_SHOOT;
+					DuckSprite.play('got_hit');
+					clearInterval(DuckDirectionInterval);
+				}
 			}
 		}
 	
@@ -209,7 +239,9 @@ package co.FlashPunk.DuckHunt.Entities
 		}
 		
 		public function gotAway():void
-		{
+		{		
+			clearInterval(DuckDirectionInterval);
+			DuckSprite.play( 'fly_up' );
 			this.Speed = 0;
 			this._Status = GOT_AWAY;
 			var currentStage:MainStage = FP.world as MainStage;

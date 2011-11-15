@@ -37,8 +37,14 @@ package co.FlashPunk.DuckHunt.Entities
 			CrosshairSprite.play('normal');	
 			Input.mouseCursor = 'hide';
 			
-			setHitbox(SPRITEWIDTH * this.Scale, 
-				SPRITEHEIGHT * this.Scale);
+			var hitBoxWidth:Number = SPRITEWIDTH * (this.Scale / 2);
+			var hitBoxHeight:Number = SPRITEHEIGHT * (this.Scale / 2);
+			var hitBoxCenter_x:Number = SPRITEWIDTH * (this.Scale / 2) - (hitBoxWidth /2 );
+			var hitBoxCenter_y:Number = SPRITEHEIGHT * (this.Scale / 2) - (hitBoxHeight / 2)
+			
+			setHitbox(hitBoxWidth, hitBoxHeight, hitBoxCenter_x, hitBoxCenter_y);
+			//setHitbox(SPRITEWIDTH, SPRITEHEIGHT);
+			trace('CH:'+ hitBoxCenter_x + ' CV: ' + hitBoxCenter_y)
 		}
 		
 		override public function update():void
