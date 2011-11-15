@@ -25,6 +25,8 @@ package co.FlashPunk.DuckHunt.Entities
 		private const BARK:Class;
 		[Embed(source = 'assets/sounds/dog_with_duck.mp3')]
 		private const GOT_IT:Class;
+		[Embed(source = 'assets/sounds/dog_laughing.mp3')]
+		private const GOT_AWAY:Class;
 		
 		
 		public static var SPRITEWIDTH:Number = 60;
@@ -41,6 +43,7 @@ package co.FlashPunk.DuckHunt.Entities
 		private var RoundIntroduction:Sfx = new Sfx(ROUND_START_SOUND);
 		private var BarkSound:Sfx = new Sfx(BARK);
 		public var GotIt:Sfx = new Sfx(GOT_IT);
+		public var GotAway:Sfx = new Sfx(GOT_AWAY);
 		
 		
 		public var DogSprite:Spritemap = new Spritemap(DOG, 56, 48);
@@ -107,6 +110,7 @@ package co.FlashPunk.DuckHunt.Entities
 					}
 					break;
 				case 'got_one':
+				case 'got_both':
 					this.y+= this.Speed_y * this.Direction;
 					if(_TimePassed >= 0.5 && Direction < 0)
 					{
@@ -121,8 +125,24 @@ package co.FlashPunk.DuckHunt.Entities
 					if(_TimePassed >= 0.5 && Direction > 0)
 					{
 						removeMeFromGame(false);
+					}					
+					break;
+				case 'laugh':
+					this.y+= this.Speed_y * this.Direction;
+					if(_TimePassed >= 0.4 && Direction < 0)
+					{
+						Direction = 0;
+						_TimePassed = 0;
 					}
-					
+					if(_TimePassed >= 1 && Direction == 0)
+					{
+						Direction = 1;
+						_TimePassed = 0;
+					}
+					if(_TimePassed >= 1 && Direction > 0)
+					{
+						removeMeFromGame(false);
+					}
 					break;
 			}			
 			

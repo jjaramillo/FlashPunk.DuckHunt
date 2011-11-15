@@ -39,6 +39,9 @@ package co.FlashPunk.DuckHunt.Entities
 		private const ALIVE:String = 'Alive';
 		private const DEAD:String = 'Dead';
 		private const JUST_SHOOT:String = 'Just Shoot';
+		private const GOT_AWAY:String = 'Got Away';
+		private const MAX_TIME_FLYING:Number = 5;
+		private const GOT_AWAY_SPEED:Number = -3;
 		
 		public static var SPRITEWIDTH:Number = 34;
 		public static var SPRITEHEIGHT:Number = 33;		
@@ -53,6 +56,7 @@ package co.FlashPunk.DuckHunt.Entities
 		private var _Direction_x:Number = 1;
 		private var _Direction_y:Number = 1;		
 		private var _SecondsAfterBeingShoot:Number = 0;
+		private var _SecondsFlying:Number = 0;
 		
 		private var _Status:String = 'Alive';
 		
@@ -61,7 +65,7 @@ package co.FlashPunk.DuckHunt.Entities
 		private var HitGroundSound:Sfx = new Sfx(HIT_GROUND);
 		private var WingFlapSound:Sfx = new Sfx(WING_FLAP);
 		private var DuckFallingSound:Sfx = new Sfx(DUCK_FALLING);
-		private var DuckSound:Sfx = new Sfx(DUCK_SOUND);
+		private var DuckSound:Sfx = new Sfx(DUCK_SOUND);		
 		
 		private var DuckSoundInterval:uint = 0;
 		
@@ -73,6 +77,7 @@ package co.FlashPunk.DuckHunt.Entities
 					DuckSound.play();
 				},1000);
 			
+			Speed = MathUtil.randomNumber(2, 8);
 			DuckSprite.scale = this.Scale;
 			DuckSprite.add( 'fly_up', [0, 1, 2, 1], 8, true );
 			DuckSprite.add( 'fly_side', [7, 6, 8, 6], 8, true );			
@@ -110,6 +115,7 @@ package co.FlashPunk.DuckHunt.Entities
 					this.y += this.Speed_y * _Direction_y;
 					checkHit();
 					checkStageLimits();
+					checkFlyingTime();
 				break;
 				case DEAD:				
 					this.y += FALLING_SPEED;
@@ -133,6 +139,13 @@ package co.FlashPunk.DuckHunt.Entities
 						DuckFallingSound.play();
 					}
 				break;
+				case GOT_AWAY:					
+					this.y += GOT_AWAY_SPEED;
+					if(this.y + SPRITEHEIGHT * this.Scale < 0)
+					{
+						escapeAndRemove();
+					}
+					break;
 			}		
 		}
 		
@@ -181,7 +194,7 @@ package co.FlashPunk.DuckHunt.Entities
 		private function checkHit():void
 		{			
 			var crossHair:Crosshair = collide('Crosshair', x, y) as Crosshair;
-			if(crossHair && Input.mousePressed)
+			if(crossHair && Input.mousePressed && _Status == ALIVE)
 			{
 				_Status = JUST_SHOOT;
 				DuckSprite.play('got_hit');
@@ -190,10 +203,36 @@ package co.FlashPunk.DuckHunt.Entities
 	
 		private function removeMeFromGame():void
 		{
-			//HitGroundSound.play();
 			var currentStage:MainStage = FP.world as MainStage;
 			currentStage.remove(this);
-			currentStage.showDogWithDuck(this.x, this.y);
+			currentStage.TryToShowDog(this.x, this.y, true);
+		}
+		
+		public function gotAway():void
+		{
+			this.Speed = 0;
+			this._Status = GOT_AWAY;
+			var currentStage:MainStage = FP.world as MainStage;
+			currentStage.sky.changeSky( 'red' );
+		}
+		
+		public function escapeAndRemove():void
+		{
+			DuckSound.stop();
+			clearInterval(DuckSoundInterval);
+			WingFlapSound.stop();
+			var currentStage:MainStage = FP.world as MainStage;
+			currentStage.remove(this);
+			currentStage.TryToShowDog(this.x, this.y = FP.screen.height * (2/3), false);
+		}
+	
+		private function checkFlyingTime():void
+		{
+			this._SecondsFlying += FP.elapsed;
+			if(this._SecondsFlying > MAX_TIME_FLYING)
+			{
+				gotAway();
+			}
 		}
 	}
 }
